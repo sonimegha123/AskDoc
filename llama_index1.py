@@ -3,9 +3,10 @@ import os
 from llama_index import VectorStoreIndex, SimpleDirectoryReader
 import openai
 import getpass
+from dotenv import load_dotenv
 
-# Set the GOOGLE_API_KEY environment variable
-os.environ["OPENAI_API_KEY"] = "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"
+load_dotenv()
+os.getenv("OPENAI_API_KEY")
 
 # Check if GOOGLE_API_KEY is not already set
 if "OPENAI_API_KEY" not in os.environ:
@@ -14,7 +15,7 @@ if "OPENAI_API_KEY" not in os.environ:
 
 
 
-DATA_DIR = "C:/Users/Aditya/Downloads/Data"
+DATA_DIR = "/home/ubuntu/aditya/DocChat/data"
 
 # Create the data directory if it doesn't exist
 if not os.path.exists(DATA_DIR):
@@ -24,11 +25,11 @@ if not os.path.exists(DATA_DIR):
 if 'index_ready' not in st.session_state:
     st.session_state['index_ready'] = False
 
-st.title("DocChat: Where PDFs Open Up to Conversation")
+st.title("DocChat:where pdfs open up to conversation ")
 
 # Sidebar for file uploads
 with st.sidebar:
-    uploaded_files = st.file_uploader("Upload your files here", type="pdf", accept_multiple_files=True)
+    uploaded_files = st.file_uploader("Choose PDF files", type="pdf", accept_multiple_files=True)
     if uploaded_files:
         for uploaded_file in uploaded_files:
             # Save the uploaded PDF to the data directory
@@ -38,7 +39,7 @@ with st.sidebar:
 
 # Button to index documents, placed in the sidebar
 with st.sidebar:
-    if st.button("Index your files to get started"):
+    if st.button("Index Documents"):
         documents = SimpleDirectoryReader(DATA_DIR).load_data()
         index = VectorStoreIndex.from_documents(documents)
         st.session_state['index'] = index  # Store the index in session state
@@ -46,7 +47,7 @@ with st.sidebar:
         st.success("Documents Indexed")
 
 # Main area for query input
-st.write("## Ask Your Question Here")
+st.write("## Enter Your Question Here")
 user_query = st.text_input("", key="query_input")
 
 if user_query:
@@ -57,3 +58,60 @@ if user_query:
         st.write(response_text)
     else:
         st.error("Please upload and index documents before querying.")
+
+
+
+
+# import boto3
+# import streamlit as st
+
+# # Initialize a boto3 client
+# s3_client = boto3.client(
+#     's3',
+#     aws_access_key_id=os.getenv('AWS_ACCESS_KEY_ID'),
+#     aws_secret_access_key=os.getenv('AWS_SECRET_ACCESS_KEY')
+# )
+
+# BUCKET_NAME = 'your-bucket-name'  # Replace with your bucket name
+
+# def upload_file_to_s3(file, bucket_name, object_name=None):
+#     """Upload a file to an S3 bucket
+
+#     :param file: File to upload
+#     :param bucket_name: Bucket to upload to
+#     :param object_name: S3 object name. If not specified, file.name is used
+#     :return: True if file was uploaded, else False
+#     """
+#     if object_name is None:
+#         object_name = file.name
+#     try:
+#         s3_client.upload_fileobj(file, bucket_name, object_name)
+#     except Exception as e:
+#         print(e)
+#         return False
+#     return True
+
+# with st.sidebar:
+#     uploaded_files = st.file_uploader("Choose PDF files", type="pdf", accept_multiple_files=True)
+#     if uploaded_files:
+#         for uploaded_file in uploaded_files:
+#             if upload_file_to_s3(uploaded_file, BUCKET_NAME, uploaded_file.name):
+#                 st.success(f"File {uploaded_file.name} uploaded successfully to S3.")
+#             else:
+#                 st.error(f"Failed to upload {uploaded_file.name}.")
+# def read_files_from_s3(bucket_name):
+#     """Generate file-like objects from S3 bucket contents."""
+#     s3_resource = boto3.resource('s3')
+#     bucket = s3_resource.Bucket(bucket_name)
+#     for obj in bucket.objects.all():
+#         file_content = obj.get()['Body'].read()
+#         yield file_content  # Adjust according to how your indexing mechanism consumes files
+
+# # Example usage
+# if st.button("Index Documents"):
+#     documents = read_files_from_s3(BUCKET_NAME)
+#     # Assuming your indexing function can handle a stream of file contents
+#     index = VectorStoreIndex.from_documents(documents)
+#     st.session_state['index'] = index  # Store the index in session state
+#     st.session_state['index_ready'] = True
+#     st.success("Documents Indexed")
